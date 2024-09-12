@@ -8,15 +8,23 @@ trait ICounter<TContractState> {
 #[starknet::contract]
 pub mod counter_contract {
     use starknet::event::EventEmitter;
+    use starknet::ContractAddress;
+    use kill_switch::{IKillSwitchDispatcher, IKillSwitchDispatcherTrait};
 
     #[storage]
     struct Storage {
         counter: u32,
+        kill_switch: ContractAddress,
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, initial_value: u32) {
+    fn constructor(
+        ref self: ContractState, 
+        initial_value: u32,
+        kill_switch: ContractAddress,
+    ) {
         self.counter.write(initial_value);
+        self.kill_switch.write(kill_switch);
     }
 
     #[event]
@@ -37,12 +45,18 @@ pub mod counter_contract {
     
     #[external(v0)]
     fn increase_counter(ref self: ContractState) {
-        self.counter.write(self.counter.read() + 1);
-        self.emit(CounterIncreased { value: self.counter.read() });
+
+        let kill_switch = IKillSwitchDispatcher { contract_address: self.kill_switch.read(), };
+
+        // assert!(!kill_switch.is_active(), "Kill Switch is active");
+        if !kill_switch.is_active() {
+            self.counter.write(self.counter.read() + 1);
+            self.emit(CounterIncreased { value: self.counter.read() });
+        } 
     }
 }
 
-
-// - Define a variant named `CounterIncreased` in the `Event` enum.
-// - Defining the `value` variable within the `CounterIncrease` struct.
-// - Emit the event in the `increase_counter()` function with the new value, once the `counter` value has been incremented.
+// - If the function `is_active()` from the `KillSwitch` 
+// contract returns `false`, then allow the 
+// `increase_counter()` function to increment the value; 
+// otherwise, return without incrementing.
