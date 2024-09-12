@@ -48,15 +48,15 @@ pub mod counter_contract {
 
         let kill_switch = IKillSwitchDispatcher { contract_address: self.kill_switch.read(), };
 
-        // assert!(!kill_switch.is_active(), "Kill Switch is active");
+        assert!(!kill_switch.is_active(), "Kill Switch is active");
+        
         if !kill_switch.is_active() {
             self.counter.write(self.counter.read() + 1);
             self.emit(CounterIncreased { value: self.counter.read() });
-        } 
+        }
     }
 }
 
-// - If the function `is_active()` from the `KillSwitch` 
-// contract returns `false`, then allow the 
-// `increase_counter()` function to increment the value; 
-// otherwise, return without incrementing.
+// - Create the condition to revert the transaction if the `KillSwith` contract is enabled
+// - Revert the transaction with the following message 
+// `Kill Switch is active`

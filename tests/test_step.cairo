@@ -15,7 +15,7 @@ fn test_counter_contract_with_kill_switch_deactivated() {
 }
 
 #[test]
-#[should_panic(expected: ("Value not increased",))]
+#[should_panic(expected: ("Kill Switch is active",))]
 fn test_counter_contract_with_kill_switch_activated() {
     let initial_counter = 15;
     let contract_address = deploy_contract(initial_counter, true);
