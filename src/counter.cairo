@@ -8,15 +8,24 @@ trait ICounter<TContractState> {
 #[starknet::contract]
 pub mod counter_contract {
     use starknet::event::EventEmitter;
+    use starknet::ContractAddress;
+    use kill_switch::{IKillSwitchDispatcher, IKillSwitchDispatcherTrait};
 
     #[storage]
     struct Storage {
         counter: u32,
+        kill_switch: ContractAddress,
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, initial_value: u32) {
+    fn constructor(
+        ref self: ContractState, 
+        initial_value: u32, 
+        kill_switch: ContractAddress,
+    ) {
         self.counter.write(initial_value);
+        self.kill_switch.write(kill_switch);
+
     }
 
     #[event]
@@ -43,6 +52,6 @@ pub mod counter_contract {
 }
 
 
-// - Define a variant named `CounterIncreased` in the `Event` enum.
-// - Defining the `value` variable within the `CounterIncrease` struct.
-// - Emit the event in the `increase_counter()` function with the new value, once the `counter` value has been incremented.
+
+// 1. Store a variable named `kill_switch` as type `ContractAddress`.
+// 2. Update the constructor function to initialize the `kill_switch` variable.
